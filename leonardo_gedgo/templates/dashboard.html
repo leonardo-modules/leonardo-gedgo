@@ -1,0 +1,97 @@
+
+{% block leftsidebar %}
+<div id="worker-section">
+  <h2>Worker Status</h2>
+  <div id="worker-status"></div>
+  <div id="worker-status-icon" class="text-centered center-text">
+    <span></span>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<h2>Update a Gedcom</h2>
+<div class="section">
+  <form action="/gedgo/dashboard/" method="post" enctype="multipart/form-data" class="form-horizontal" role="form">
+      {% csrf_token %}
+      <select class="form-control" name="gedcom_id">
+        {% for ged in gedcoms %}
+          <option value="{{ ged.id }}">{{ ged.title }}</option>
+        {% endfor %}
+      </select><br />
+      <input type="file" name="gedcom_file">
+      <p class="help-block">Select a Gedcom file to update from.</p><br />
+      <div class="email_users well">
+        <h5>Message to send to users:</h5>
+        <textarea name="message" class="comment-area form-control" rows="10"></textarea><br />
+        <h5>Users to notify:</h5>
+        <div class="row">
+          <div class="col-xs-6"><input type="checkbox" id="select-all"> Select All</div>
+        </div><br />
+        <div class="row">
+          {% for user in users %}
+            <div class="col-xs-6"><input type="checkbox" value="{{ user.id }}" name="email_users" class="email_users_checkbox"> {% if user.first_name and user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</div>
+          {% endfor %}
+        </div><br />
+      </div>
+      <input id="submit-gedcom" class="btn btn-danger disabled" type="submit" value="Upload" />
+  </form>
+  <p>
+    <br />
+    After finishing the update, the website will send an email to the site owner indicating that the update is complete.
+  </p><br />
+</div>
+
+<div class="section">
+  <h2>Traffic Stats</h2>
+  {% if total %}
+    <div class="well">
+      <h2>{{ total }} total page views</h2>
+      since {{ tracking_start }}
+    </div><br />
+  {% endif %}
+  {% if user_views %}
+    <h3>User Activity</h3>
+    <table class="table">
+      <tr><th>Username</th><th>Page views</th><th>Last View</th></tr>
+      {% for user_view in user_views %}
+        <tr>
+          <td><a href="/gedgo/dashboard/user/{{ user_view.user.id }}/">{{ user_view.user.username }}</a></td>
+          <td>{{ user_view.count }}</td>
+          <td>{{ user_view.last_view }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+  {% if not total and not user_views %}
+    <p>No activity recorded yet.</p>
+    <br />
+  {% endif %}
+  <form action="/gedgo/dashboard/?reset_tracking=1" method="post" role="form">
+    {% csrf_token %}
+    <input class="btn btn-danger" type="submit" value="Reset Tracking" />
+  </form>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+  $('#select-all').on('click', function () {
+    $('.email_users_checkbox').prop('checked', this.checked);
+  });
+  $.getJSON('worker/status', function(res) {
+    var el = $('#worker-status-icon');
+    var st = $('#worker-status-icon span');
+    if (res.length) {
+      el.addClass('bg-success');
+      st.addClass('glyphicon glyphicon-ok');
+      $('#submit-gedcom').removeClass("disabled");
+      $('#worker-status').html("<p>Worker is currently availabe to process gedcoms!</p>");
+    } else {
+      el.addClass('bg-danger');
+      st.addClass('glyphicon glyphicon-remove');
+      $('#worker-status').html("<p>Worker is currently offline, so gedcom uploads cannot be processed.</p>");
+    }
+  });
+</script>
+{% endblock %}

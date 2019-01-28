@@ -1,0 +1,214 @@
+
+{% load thumbnail %}
+
+{% comment %}
+{% block leftsidebar %}
+<div class="row">
+{% for photo in photos %}
+    <div class="col-lg-4 col-md-6">
+      <a href="/gedgo/document/{{ photo.id }}">
+        <img src="/gedgo/media/gedcom/{{ photo.docfile.name }}?size=w128h128" class="sidebar-thumb img-rounded" onerror="this.onerror=null;this.src='{{ STATIC_URL }}/question.jpg';">
+      </a>
+    </div>
+{% empty %}
+    <div class="col-lg-12">
+        <span class="text-center text-muted">(no photos)</span>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}
+{% endcomment %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-5">
+      <a href="{% if person.photos %}/gedgo/document/{{ person.key_photo.id }}{% else %}#{% endif %}">
+        {% thumbnail person.key_photo.docfile.path "640x480" format="PNG" as thumb %}
+            <img src="{{ thumb.url }}" class="thumb img-rounded">
+        {% endthumbnail %}
+      </a>
+    </div>
+    <div class="col-xs-7">
+      <h2>{{ person.full_name }}</h2>
+    </div>
+    <div class="col-xs-12 col-md-7">{% include "basic-information.html" %}</div>
+</div>
+
+<!-- Basic information pod -->
+<div class="section">
+  <!-- Born-to -->
+  {% if person.child_family %}
+    <h4>Parents</h4>
+    <div class="row">
+    {% for somebody in person.child_family.spouses %}
+      <div class="col-sm-6">
+        {% include "person-card.html" %}
+      </div>
+    {% endfor %}
+    </div>
+
+    <!-- Siblings -->
+    {% if person.child_family.children.exists and not person.child_family.single_child == person %}
+      <h4>Siblings</h4>
+      <div class="row">
+        {% for somebody in person.child_family.ordered_children.iterator %}
+            {% if not somebody == person %}
+              <div class="col-sm-6">
+                {% include "person-card.html" %}
+              </div>
+            {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+{% for family in person.spousal_families.iterator %}
+<div class="section">
+  <h3>{% if family.kind = "MARR" %}Marital Family{% else %}Domestic Relationship{% endif %}</h3>
+  <div class="row">
+  {% for somebody in family.spouses %}
+      {% if not somebody == person %}
+        <div class="col-sm-6">
+          {% include "person-card.html" %}
+        </div>
+      {% endif %}
+  {% endfor %}
+  </div>
+
+  <!-- Marital Facts -->
+  {% if family.joined.date or family.joined.place or family.separated.date %}
+  <hr />
+    {% if family.joined.date %}
+      <strong>{% if family.kind = "MARR" %}Married{% else %}Domestic Partners{% endif %}:</strong> {{ family.joined.date_string }}{% if family.joined.date_approxQ %} (approximate){% endif %}{% endif %}{% if family.joined.place %}<br />{{ family.joined.place }}{% endif %}
+    {% if family.separated.date %}
+      <strong>{% if family.kind = "MARR" %}Divorced{% else %}Separated{% endif %}:</strong> {{ family.separated.date_string }} {% if family.separated.date_approxQ %}(approximate){% endif %}
+      <br />
+    {% endif %}
+    {% if family.separated.place %}
+      <strong>Place:</strong> {{ family.separated.place }}
+      <br /><br />
+    {% endif %}
+  <hr />
+  {% endif %}
+
+  {% if family.photos.exists %}
+    <h4>Family Photos:</h4>
+    <div class="photo-subsection row">
+    {% for photo in family.photos.iterator %}
+      <div class="col-xs-4 col-sm-3">
+        <a href="/gedgo/document/{{ photo.id }}">
+          <!-- TODO: Fix hacks -->
+          <img src="/media/gedcom/{{ photo.docfile.name }}?size=w128h128" class="subsection-thumb img-rounded center-block clearfix visible-xs" onerror="this.onerror=null;this.src='{{ STATIC_URL }}/question.jpg';">
+          <img src="/media/gedcom/{{ photo.docfile.name }}?size=w128h128" class="sidebar-thumb img-rounded center-block clearfix hidden-xs" onerror="this.onerror=null;this.src='{{ STATIC_URL }}/question.jpg';">
+        </a>
+      </div>
+    {% endfor %}
+    </div>
+    <hr />
+  {% endif %}
+
+  <!-- Children -->
+  {% if family.children.exists %}
+    <h4>Children:</h4>
+    <div class="row">
+    {% for somebody in family.ordered_children.iterator %}
+      <div class="col-sm-6">
+        {% include "person-card.html" %}
+      </div>
+    {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endfor %}
+
+{% if posts.exists %}
+<div class="section">
+  <h3>Related blog posts:</h3>
+  {% for post in posts.iterator %}
+    <a href="/gedgo/blog/post/{{ post.id }}">{{ post.title }}</a>&nbsp; ({{ post.created }})<br>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if photos %}
+<div class="section visible-xs">
+  <h3>Photos:</h3>
+  <div class="row">
+  {% for photo in photos %}
+        <div class="col-xs-4">
+          <a href="/gedgo/document/{{ photo.id }}">
+            <img src="/media/gedcom/{{ photo.docfile.name }}?size=w128h128" class="subsection-thumb img-rounded center-block clearfix" onerror="this.onerror=null;this.src='{{ STATIC_URL }}/question.jpg';">
+          </a>
+        </div>
+  {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if person.documentaries %}
+<div class="section">
+  <h3>Documentaries:</h3>
+  {% for doc in person.documentaries %}
+      <a href="{{ doc.location }}">{{ doc.title }}</a><br>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if person.notes.exists %}
+<div class="section">
+  <h3>Notes:</h3>
+  {% for note in person.notes.all %}
+      {{ note.text|linebreaks }}
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if person.documents %}
+<div class="section">
+  <h3>Documents:</h3>
+  {% for doc in person.documents %}
+      <a href="/gedgo/document/{{ doc.id }}">
+        <span class="glyphicon glyphicon-{{ doc.glyph }}"></span> &nbsp; {{ doc.docfile.name }}
+      </a><br>
+  {% endfor %}
+{% endif %}
+
+<div class="section hidden-xs" id="timeline-pod">
+    <h3>Timeline:</h3>
+    <div id="timeline" data-gid="{{gedcom.id}}" data-pid="{{person.pointer}}"></div>
+</div>
+
+{% if person.child_family %}
+<div class="section hidden-xs">
+    <h3>Pedigree Chart:</h3>
+    <div id="pedigree-tree" data-gid="{{gedcom.id}}" data-pid="{{person.pointer}}"></div>
+</div>
+{% endif %}
+
+<div class="section">
+    {% include "comment_form.html" %}
+</div>
+
+{%endblock %}
+
+{% block javascript %}
+<style type="text/css">
+rect {
+  fill: white;
+  stroke: teal;
+  stroke-width: 2;
+}
+path {
+  fill: none;
+  stroke: gray;
+  stroke-width: 2;
+}
+</style>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.0/d3.min.js"></script>
+  {% if person.child_family %}
+    <script src="{{ STATIC_URL }}js/pedigree_leonardo.js"></script>
+  {% endif %}
+  <script src="{{ STATIC_URL }}js/timeline_leonardo.js"></script>
+{% endblock %}

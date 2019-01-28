@@ -1,0 +1,32 @@
+
+{% block docuactive %}
+    class="active"
+{% endblock %}
+
+{% block leftsidebar %}
+    <h4>{{ documentary.title }}</h4>
+    <p>{{ documentary.description }}</p>
+    <br/>
+    <p><a href="/gedgo/media/documentary/{{ documentary.location | urlencode }}"><i class="fa fa-download"></i> Download</a></p>
+    <br/>
+    <p><a href="/gedgo/documentaries"><i class="fa fa-angle-double-left"></i> Back to documentaries</a></p>
+{% endblock %}
+
+
+{% block content %}
+{% if can_video %}
+    <video style="width: 100%" src="/gedgo/media/documentary/{{ documentary.location | urlencode }}" type="video/mp4" controls></video>
+{% else %}
+    <br/>
+    <div class="center-block text-center">
+        <a href="/gedgo/media/documentary/{{ documentary.location | urlencode }}">
+            <i class="fa fa-{{ file.type }} fa-2x"></i>
+        </a>
+        <br/>
+        <br/>
+        <p class="text-muted">This documentary cannot be previewed, but you can download it and view on your own computer.</p>
+        <br/>
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,5 @@
+[run]
+source = leonardo_gedgo
+omit =
+    *migrations*
+    leonardo_gedgo/__init__.py

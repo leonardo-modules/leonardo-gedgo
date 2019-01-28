@@ -1,0 +1,18 @@
+{% load thumbnail %}
+<div class="card row">
+  <div class="col-xs-5">
+    <a href="/gedgo/{{ somebody.gedcom.id }}/{{ somebody.pointer }}/">
+        {% if somebody.photos %}
+            {% thumbnail somebody.key_photo.docfile.path "128x128" format="PNG" as thumb %}
+                <img src="{{ thumb.url }}" class="thumb img-rounded">
+            {% endthumbnail %}
+        {% else %}
+            <img src="{{ STATIC_URL }}img/generic_person.gif" class="thumb img-rounded">
+        {% endif %}
+        </a>
+  </div>
+  <div class="card-content col-xs-7">
+    <h4 class="card-title"><a href="/gedgo/{{ somebody.gedcom.id }}/{{ somebody.pointer }}/">{{ somebody.full_name }}</a></h4>
+    ({{ somebody.year_range }})
+  </div>
+</div>

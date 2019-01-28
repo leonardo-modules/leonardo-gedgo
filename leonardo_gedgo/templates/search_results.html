@@ -1,0 +1,19 @@
+
+{% block leftsidebar %}
+    You searched for: <strong>{{ query }}</strong><br>
+    Found {% if people %}{{ people|length }} person{{ people|pluralize }}{% endif %}{% if posts %}{% if people %}, and {% endif %}{{ posts|length }} blog post{{ posts|pluralize }}{% endif %}.
+{% endblock %}
+
+{% block content %}
+{% if people or posts %}
+  {% for somebody in people %}
+  <div class="row">
+    <div class="col-sm-6">
+      {% include "person-card.html" %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+    <p>No people matched your search criteria.<br><i>{{ query }}</i></p>
+{% endif %}
+{% endblock %}

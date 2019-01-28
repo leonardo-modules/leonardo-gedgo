@@ -1,0 +1,10 @@
+celery>=4.1.0
+pillow>=3.1.1
+dj-static>=0.0.6
+anyjson
+dropbox
+redis
+flake8
+requests
+redis
+-e git+https://github.com/leonardo-developer/gedgo.git#egg=gedgo
