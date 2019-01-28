@@ -4,6 +4,7 @@
 {% load leonardo_tags %}
 
 {% block content %}
+<div class="{{ widget.prerendered_content }}">
 <form action="{% app_reverse 'gedgo_search' 'leonardo_gedgo.apps.gedgo' %}" method="get" class="navbar-collapse collapse navbar-form navbar-left" role="search">
     <div>
           <div class="input-group">
@@ -14,4 +15,5 @@
           </div>
     </div>
 </form>
+</div>
 {% endblock %}
